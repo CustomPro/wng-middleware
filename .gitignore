@@ -1,0 +1,13 @@
+#folders#
+/node_modules/*
+
+
+#Os generated files#
+.DS_Store
+.DS_Store?
+Thumbs.db
+
+#Logs and Database#
+*.log
+*.sql
+*.sqlite

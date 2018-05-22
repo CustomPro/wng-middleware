@@ -1,0 +1,26 @@
+{
+  "adminPublicKeys": [
+    "f4659dc392e1aea36a6461752df1082f72db0620862da91239052550548d6847",
+    "cfd8ebdc53add87d5aae2530621557649cc3299a4eecaf86c84f486ddfe73b4f",
+    "59356122a262412306641f9b82d72bd062dcedfa6e5e73b9dd5fedb3d2fd4b3a"
+  ],
+  "awsID": "AKIAJFR7PFNJKXJIDFZA",
+  "awsSecret": "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",
+  "awsBucket": "production-kyc",
+  "awsMasterKey": "AWS MASTER KEY",
+  "sendgridApiKey": "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",
+  "defaultEmailAddress": "hi@m19.nl",
+  "nrsUrl": "https://sg.wang-coin.com",
+  "nrsSuffix": "dbn",
+  "nrsSecretPhrase": "FX6SWt3ENuGfC8b2HmqAYbPzmlvvtvNNVf4KFmeM6kBbHtNaTJgbLHZ2wsXhKQT4yhMgCU79MCqTBfrmCf59SYE2lSlSPswnUUhmU7zg9pRnbvqpCmYhxbMsPGQfzTyqTg6ZPx82zvvmGYwcKwjC82",
+  "minimumFee": 1e6,
+  "bitcoin": {
+    "xpub": "xpub661MyMwAqRbcFu9Rr6VKQs9kv7T5AbWge1VKRkKNK2YchtroynUUN8qPn8B8bpDekZuC8ebmqWZXvAAGWH3saut1M2TjghtT4yw6zj1LekY",
+    "minimumDepositSatoshis": 100000,
+    "urlSecret": "f4hfNLb6UdBdYuQQ",
+    "bitcoinCallbackURL": "https://api.wallet.wang-coin.com/bitcoin/new-tx",
+    "bitcoinAssetId": "11940232824756986965",
+    "blockcypherToken": "de424a7ba13e402aa01e013da61c3823"
+  }
+}
+
