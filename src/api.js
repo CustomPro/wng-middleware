@@ -85,7 +85,7 @@ export const verifyEmail = async (ctx) => {
         await Account.create({
             ...ctx.body
           }).then(async (result) => {
-            let transporter = nodemailer.createTransport({
+           /* let transporter = nodemailer.createTransport({
               service: 'outlook',
               auth:{
                 user: 'law8818@outlook.com',
@@ -105,7 +105,7 @@ export const verifyEmail = async (ctx) => {
                 console.log('Email send:' + info.response)
               }
 
-            })
+            })*/
             ctx.body = {
             'status': 'success',
             'code': '1'

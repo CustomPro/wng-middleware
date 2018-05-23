@@ -1,0 +1,12 @@
+{
+  "name": "user-management",
+  "script": "dist/server.js",
+  "env": {
+    "NODE_ENV":"production",
+    "PORT": 3001,
+    "DEBUG":"app:*",
+    "DB_NAME": "user-management",
+    "DB_USER": "root",
+    "DB_PASSWORD": "5xdM2tgjDsej9uM5"
+  }
+}
