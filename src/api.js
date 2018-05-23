@@ -8,7 +8,7 @@ import AWS from 'aws-sdk'
 import fs from 'fs'
 import awaitfs from 'await-fs'
 import filepath from 'filepath'
-//import download from 'download-file'
+import nodemailer from 'nodemailer'
 
 
 const S3Client = new AWS.S3({
@@ -17,11 +17,23 @@ const S3Client = new AWS.S3({
   maxRetries: 3
 })
 
+
 export const register = async (ctx) => {
-  await Account.create({
-    ...ctx.body
-  }).then(async (result) => {
-    ctx.body = result
+  const {
+    username,
+    email,
+    secretPhrase,
+    accountRS
+  } = ctx.body
+  await Account.update(
+    { username, secretPhrase, accountRS },
+    { where: { email } }
+  ).then(async (result) => {
+    console.log(result)
+    ctx.body = {
+      'status': 'success',
+      result
+    }
   })
 }
 
@@ -45,6 +57,98 @@ export const changePassword = async (ctx) => {
   })
 }
 
+export const verifyEmail = async (ctx) => {
+
+  const {
+    email
+  } = ctx.body
+  await Account.findOne({
+    where: {
+      email
+    }
+  }).then(async (result) => {
+    if(result){
+      ctx.body = {
+        'status': 'success',
+        'code': '0'
+        }
+      } else {
+        let code = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000
+
+        ctx.body = {
+          username: email,
+          email: email,
+          secretPhrase: email,
+          accountRS: code
+        }
+        
+        await Account.create({
+            ...ctx.body
+          }).then(async (result) => {
+            let transporter = nodemailer.createTransport({
+              service: 'outlook',
+              auth:{
+                user: 'law8818@outlook.com',
+                pass: 'qweASD1@#'
+              }
+            })
+            let mailOptions = {
+              from: 'law8818@outlook.com',
+              to: email,
+              subject: 'Welcome to Wang Coin',
+              text: `Hi.\n Thank you for joining Wang Coin! To finish register, you just need to confirm that we got your email right.\n Verify code:${code}`
+            }
+            transporter.sendMail(mailOptions, function(error, info){
+              if(error){
+                console.log(error)
+              } else {
+                console.log('Email send:' + info.response)
+              }
+
+            })
+            ctx.body = {
+            'status': 'success',
+            'code': '1'
+            }
+          })
+      }
+    }, async (err) => {
+      ctx.body = {
+      'status': 'fail',
+      'code': err
+      }
+    })
+}
+
+export const verifyCode = async (ctx) => {
+  const {
+    email,
+    code
+  } = ctx.body
+  await Account.findOne({
+    where: {
+      email,
+      accountRS: code
+    }
+  }).then(async (result) => {
+    if(result){
+      ctx.body = {
+        'status': 'success',
+        'code': '1'
+        }
+      } else {
+        ctx.body = {
+        'status': 'success',
+        'code': '0'
+        }
+      }
+    }, async (err) => {
+      ctx.body = {
+        'status': 'fail',
+        'code': err
+        }
+    })
+}
 export const getAccount = async (ctx) => {
   const {
     username,

@@ -28,6 +28,7 @@
     "koa-router": "^7.0.1",
     "mysql": "^2.10.2",
     "node-pre-gyp": "^0.10.0",
+    "nodemailer": "^4.6.4",
     "nxt-crypto": "^1.2.2",
     "qs": "^6.4.0",
     "sequelize": "^3.23.3",
