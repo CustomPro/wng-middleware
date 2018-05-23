@@ -9,6 +9,7 @@ import fs from 'fs'
 import awaitfs from 'await-fs'
 import filepath from 'filepath'
 import nodemailer from 'nodemailer'
+import twoFactor from 'node-2fa'
 
 
 const S3Client = new AWS.S3({
@@ -49,7 +50,6 @@ export const changePassword = async (ctx) => {
     { secretPhrase: secretPhrase },
     { where: { accountRS: accountRS } }
   ).then(async (result) => {
-    console.log(result)
     ctx.body = {
       'status': 'success',
       result
@@ -57,6 +57,48 @@ export const changePassword = async (ctx) => {
   })
 }
 
+export const verifyMessage = async (ctx) => {
+  const {
+    username,
+    email
+  } = ctx.body
+
+  let newSecret = twoFactor.generateSecret({username, email})
+  let newToken = twoFactor.generateToken(newSecret)
+
+  await Account.update(
+   { token: newSecret },
+   { where: { email } }
+   ).then(async (result) => {
+   let transporter = nodemailer.createTransport({
+          service: 'outlook',
+          auth:{
+            user: 'lawtony2018@outlook.com',
+            pass: 'qweASD1@#'
+          }
+        })
+        let mailOptions = {
+          from: 'lawtony2018@outlook.com',
+          to: email,
+          subject: 'Welcome to Wang Coin',
+          text: `Your secret key is:${newToken}`
+        }
+        transporter.sendMail(mailOptions, function(error, info){
+          if(error){
+            console.log(error)
+          } else {
+            console.log('Email send:' + info.response)
+          }
+
+        })
+        ctx.body = {
+        'status': 'success',
+        'code': '1'
+        }
+   })
+  
+
+}
 export const verifyEmail = async (ctx) => {
 
   const {
@@ -85,15 +127,15 @@ export const verifyEmail = async (ctx) => {
         await Account.create({
             ...ctx.body
           }).then(async (result) => {
-           /* let transporter = nodemailer.createTransport({
+            let transporter = nodemailer.createTransport({
               service: 'outlook',
               auth:{
-                user: 'law8818@outlook.com',
+                user: 'lawtony2018@outlook.com',
                 pass: 'qweASD1@#'
               }
             })
             let mailOptions = {
-              from: 'law8818@outlook.com',
+              from: 'lawtony2018@outlook.com',
               to: email,
               subject: 'Welcome to Wang Coin',
               text: `Hi.\n Thank you for joining Wang Coin! To finish register, you just need to confirm that we got your email right.\n Verify code:${code}`
@@ -105,7 +147,7 @@ export const verifyEmail = async (ctx) => {
                 console.log('Email send:' + info.response)
               }
 
-            })*/
+            })
             ctx.body = {
             'status': 'success',
             'code': '1'
@@ -152,8 +194,11 @@ export const verifyCode = async (ctx) => {
 export const getAccount = async (ctx) => {
   const {
     username,
-    email
+    email,
+    code
   } = ctx.query
+
+  console.log(code)
 
   await Account.findOne({
     where: {
@@ -161,6 +206,7 @@ export const getAccount = async (ctx) => {
       email
     }
   }).then(async (result) => {
+    console.log(result)
     ctx.body = {
         status: 'success',
         account: result
@@ -171,6 +217,8 @@ export const getAccount = async (ctx) => {
         errorDescription: 'User not found'
       }
     })
+
+  
   //console.log(ctx.body)
 }
 

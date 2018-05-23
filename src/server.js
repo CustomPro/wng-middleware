@@ -19,7 +19,8 @@ import {
   getEncryptedVerification,
   changePassword,
   verifyEmail,
-  verifyCode
+  verifyCode,
+  verifyMessage
 } from './api'
 import {
   createVoucher,
@@ -78,6 +79,7 @@ router.get('/constants', getConstants)
 router.post('/changePassword', changePassword)
 router.post('/verifyEmail', verifyEmail)
 router.post('/verifyCode', verifyCode)
+router.post('/verifyMessage', verifyMessage)
 // verification routes
 router.post('/verification', createVerification)
 router.post('/admin/verification/:id/status', isAdminPost, updateAccountStatus)
