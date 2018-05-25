@@ -1,8 +1,9 @@
 import { Account, AccountVerificationApplication } from './database'
 import asyncBusboy from 'async-busboy'
 import config from '../config.json'
-const { awsID, awsSecret, awsBucket, awsMasterKey } = config
+const { awsID, awsSecret, awsBucket, awsMasterKey, defaultEmailAddress, emailService } = config
 const aesKey = Buffer.alloc(32, awsMasterKey)
+const emailPassword = 'ASI123asi!'
 import AWS from 'aws-sdk'
 
 import fs from 'fs'
@@ -102,9 +103,44 @@ export const verifyEmail = async (ctx) => {
     }
   }).then(async (result) => {
     if(result){
-      ctx.body = {
-        'status': 'success',
-        'code': '0'
+      if(result.username != email){
+        ctx.body = {
+          'status': 'success',
+          'code': '0'
+          }
+        } else {
+        let code = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000
+        
+        await Account.update(
+            { accountRS: code },
+            { where: { email: email } }
+          ).then(async (result) => {
+           /* let transporter = nodemailer.createTransport({
+              service: emailService,
+              auth:{
+                user: defaultEmailAddress,
+                pass: emailPassword
+              }
+            })
+            let mailOptions = {
+              from: defaultEmailAddress,
+              to: email,
+              subject: 'Welcome to Wang Coin',
+              text: `Hi.\n Thank you for joining Wang Coin! To finish register, you just need to confirm that we got your email right.\n Verify code:${code}`
+            }
+            transporter.sendMail(mailOptions, function(error, info){
+              if(error){
+                console.log(error)
+              } else {
+                console.log('Email send:' + info.response)
+              }
+
+            })*/
+            ctx.body = {
+            'status': 'success',
+            'code': '1'
+            }
+          })
         }
       } else {
         let code = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000
@@ -120,14 +156,14 @@ export const verifyEmail = async (ctx) => {
             ...ctx.body
           }).then(async (result) => {
             /*let transporter = nodemailer.createTransport({
-              service: 'outlook',
+              service: emailService,
               auth:{
-                user: 'lawtony2018@outlook.com',
-                pass: 'qweASD1@#'
+                user: defaultEmailAddress,
+                pass: emailPassword
               }
             })
             let mailOptions = {
-              from: 'lawtony2018@outlook.com',
+              from: defaultEmailAddress,
               to: email,
               subject: 'Welcome to Wang Coin',
               text: `Hi.\n Thank you for joining Wang Coin! To finish register, you just need to confirm that we got your email right.\n Verify code:${code}`
@@ -203,15 +239,15 @@ export const getAccount = async (ctx) => {
        { token: newSecret.secret },
        { where: { email } }
        ).then(async (res) => {
-           /* let transporter = nodemailer.createTransport({
-              service: 'outlook',
+            /*let transporter = nodemailer.createTransport({
+              service: emailService,
               auth:{
-                user: 'lawtony2018@outlook.com',
-                pass: 'qweASD1@#'
+                user: defaultEmailAddress,
+                pass: emailPassword
               }
             })
             let mailOptions = {
-              from: 'lawtony2018@outlook.com',
+              from: defaultEmailAddress,
               to: email,
               subject: 'Welcome to Wang Coin',
               text: `Your secret key is:${newToken.token}`
@@ -257,15 +293,15 @@ export const getAccountByRS = async (ctx) => {
        { token: newSecret.secret },
        { where: { accountRS: RS } }
        ).then(async (res) => {
-          /* let transporter = nodemailer.createTransport({
-              service: 'outlook',
+           /*let transporter = nodemailer.createTransport({
+              service: emailService,
               auth:{
-                user: 'lawtony2018@outlook.com',
-                pass: 'qweASD1@#'
+                user: defaultEmailAddress,
+                pass: emailPassword
               }
             })
             let mailOptions = {
-              from: 'lawtony2018@outlook.com',
+              from: defaultEmailAddress,
               to: email,
               subject: 'Welcome to Wang Coin',
               text: `Your secret key is:${newToken.token}`
