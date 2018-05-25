@@ -59,43 +59,35 @@ export const changePassword = async (ctx) => {
 
 export const verifyMessage = async (ctx) => {
   const {
-    username,
-    email
+    accountRS,
+    code
   } = ctx.body
+  await Account.findOne({
+    where: {
+      accountRS
+    }
+  }).then(async (result) => {
+    const savedToken = result.token
 
-  let newSecret = twoFactor.generateSecret({username, email})
-  let newToken = twoFactor.generateToken(newSecret)
-
-  await Account.update(
-   { token: newSecret },
-   { where: { email } }
-   ).then(async (result) => {
-   let transporter = nodemailer.createTransport({
-          service: 'outlook',
-          auth:{
-            user: 'lawtony2018@outlook.com',
-            pass: 'qweASD1@#'
-          }
-        })
-        let mailOptions = {
-          from: 'lawtony2018@outlook.com',
-          to: email,
-          subject: 'Welcome to Wang Coin',
-          text: `Your secret key is:${newToken}`
-        }
-        transporter.sendMail(mailOptions, function(error, info){
-          if(error){
-            console.log(error)
-          } else {
-            console.log('Email send:' + info.response)
-          }
-
-        })
-        ctx.body = {
-        'status': 'success',
-        'code': '1'
-        }
-   })
+    let flag = twoFactor.verifyToken(savedToken, code, 300)
+    console.log(flag)
+    if( flag.delta == 0 || flag.delta == -1){
+      ctx.body = {
+      'status': 'success',
+      'code': '1'
+      }
+    } else {
+      ctx.body = {
+        status: 'error',
+        code: '0'
+      }
+    }
+  }, async (err) => {
+      ctx.body = {
+        status: 'error',
+        code: '0'
+      }
+    })
   
 
 }
@@ -127,7 +119,7 @@ export const verifyEmail = async (ctx) => {
         await Account.create({
             ...ctx.body
           }).then(async (result) => {
-            let transporter = nodemailer.createTransport({
+            /*let transporter = nodemailer.createTransport({
               service: 'outlook',
               auth:{
                 user: 'lawtony2018@outlook.com',
@@ -147,7 +139,7 @@ export const verifyEmail = async (ctx) => {
                 console.log('Email send:' + info.response)
               }
 
-            })
+            })*/
             ctx.body = {
             'status': 'success',
             'code': '1'
@@ -194,11 +186,8 @@ export const verifyCode = async (ctx) => {
 export const getAccount = async (ctx) => {
   const {
     username,
-    email,
-    code
+    email
   } = ctx.query
-
-  console.log(code)
 
   await Account.findOne({
     where: {
@@ -206,11 +195,40 @@ export const getAccount = async (ctx) => {
       email
     }
   }).then(async (result) => {
-    console.log(result)
-    ctx.body = {
-        status: 'success',
-        account: result
-      }
+      let newSecret = twoFactor.generateSecret({name: username, account: email})
+      let newToken = twoFactor.generateToken(newSecret.secret)
+
+      console.log(newToken)
+      await Account.update(
+       { token: newSecret.secret },
+       { where: { email } }
+       ).then(async (res) => {
+           /* let transporter = nodemailer.createTransport({
+              service: 'outlook',
+              auth:{
+                user: 'lawtony2018@outlook.com',
+                pass: 'qweASD1@#'
+              }
+            })
+            let mailOptions = {
+              from: 'lawtony2018@outlook.com',
+              to: email,
+              subject: 'Welcome to Wang Coin',
+              text: `Your secret key is:${newToken.token}`
+            }
+            transporter.sendMail(mailOptions, function(error, info){
+              if(error){
+                console.log(error)
+              } else {
+                console.log('Email send:' + info.response)
+              }
+
+            })*/
+            ctx.body = {
+              status: 'success',
+              account: result
+            }
+       })    
     }, async (err) => {
       ctx.body = {
         status: 'error',
@@ -221,7 +239,57 @@ export const getAccount = async (ctx) => {
   
   //console.log(ctx.body)
 }
+export const getAccountByRS = async (ctx) => {
+  const {
+    RS
+  } = ctx.query
+  console.log(RS)
+  await Account.findOne({
+    where: {
+      accountRS: RS
+    }
+  }).then(async (result) => {
+    let newSecret = twoFactor.generateSecret({ accountRS: RS })
+    let newToken = twoFactor.generateToken(newSecret.secret)
 
+    console.log(newToken)
+    await Account.update(
+       { token: newSecret.secret },
+       { where: { accountRS: RS } }
+       ).then(async (res) => {
+          /* let transporter = nodemailer.createTransport({
+              service: 'outlook',
+              auth:{
+                user: 'lawtony2018@outlook.com',
+                pass: 'qweASD1@#'
+              }
+            })
+            let mailOptions = {
+              from: 'lawtony2018@outlook.com',
+              to: email,
+              subject: 'Welcome to Wang Coin',
+              text: `Your secret key is:${newToken.token}`
+            }
+            transporter.sendMail(mailOptions, function(error, info){
+              if(error){
+                console.log(error)
+              } else {
+                console.log('Email send:' + info.response)
+              }
+
+            })*/
+          ctx.body = {
+            status: 'success',
+            account: result
+          }
+      })
+  }, async (err) => {
+    ctx.body = {
+      status: 'error',
+      errorDescription: 'User not found'
+    }
+  })
+}
 export const getAccounts = async (ctx) => {
   let { limit, offset, search } = ctx.query
   if (!limit || limit <= 0) limit = 10
@@ -284,7 +352,7 @@ export const createVerification = async (ctx) => {
   if (fields.accountRS) {
     accountRS = fields.accountRS
   }
-  var dir = `/wng-middleware-master/img/${accountRS}`
+  var dir = `/root/middleware/img/${accountRS}`
   if(!fs.existsSync(dir)){
     fs.mkdirSync(dir)
   }
@@ -311,9 +379,7 @@ export const createVerification = async (ctx) => {
 
 export const getEncryptedVerification = async (ctx) => {
   const { accountRS, file } = ctx.params
-  //console.log(ctx.params)
-  //console.log(accountRS+file)
-  const filePath = `/wng-middleware-master/img/${accountRS}/${file}`
+  const filePath = `/root/middleware/img/${accountRS}/${file}`
   try {
     let content = await awaitfs.readFile(filePath)
     ctx.set('Content-Type', 'application/octet-stream')

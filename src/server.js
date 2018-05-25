@@ -20,7 +20,8 @@ import {
   changePassword,
   verifyEmail,
   verifyCode,
-  verifyMessage
+  verifyMessage,
+  getAccountByRS
 } from './api'
 import {
   createVoucher,
@@ -75,7 +76,7 @@ router.get('/is-admin', isAdmin, (ctx) => {
 })
 router.get('/accounts', isAdmin, getAccounts)
 router.get('/constants', getConstants)
-
+router.get('/accountRS', getAccountByRS)
 router.post('/changePassword', changePassword)
 router.post('/verifyEmail', verifyEmail)
 router.post('/verifyCode', verifyCode)

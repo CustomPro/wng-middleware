@@ -12,7 +12,7 @@ const settings = {
 
 //if (process.env.NODE_ENV !== 'production') {
   settings.dialect = 'sqlite'
-  settings.storage = '/wng-middleware-master/database.sqlite'
+  settings.storage = './database.sqlite'
 //}
 
 
@@ -37,6 +37,10 @@ export const Account = sequelize.define('account', {
   accountRS: {
     type: Sequelize.STRING,
     allowNull: false
+  },
+  token: {
+    type: Sequelize.STRING,
+    allowNull: true
   }
 })
 
