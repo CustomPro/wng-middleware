@@ -8,7 +8,6 @@ import AWS from 'aws-sdk'
 
 import fs from 'fs'
 import awaitfs from 'await-fs'
-import filepath from 'filepath'
 import nodemailer from 'nodemailer'
 import twoFactor from 'node-2fa'
 
@@ -19,7 +18,7 @@ const S3Client = new AWS.S3({
   maxRetries: 3
 })
 
-
+const imgPath = '/Users/jetlee/Documents/wng-middleware/img'
 export const register = async (ctx) => {
   const {
     username,
@@ -63,6 +62,7 @@ export const verifyMessage = async (ctx) => {
     accountRS,
     code
   } = ctx.body
+
   await Account.findOne({
     where: {
       accountRS
@@ -72,6 +72,7 @@ export const verifyMessage = async (ctx) => {
 
     let flag = twoFactor.verifyToken(savedToken, code, 300)
     console.log(flag)
+
     if( flag.delta == 0 || flag.delta == -1){
       ctx.body = {
       'status': 'success',
@@ -89,7 +90,6 @@ export const verifyMessage = async (ctx) => {
         code: '0'
       }
     })
-  
 
 }
 export const verifyEmail = async (ctx) => {
@@ -112,7 +112,7 @@ export const verifyEmail = async (ctx) => {
         let code = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000
         
         await Account.update(
-            { accountRS: code },
+            { token: code },
             { where: { email: email } }
           ).then(async (result) => {
            /* let transporter = nodemailer.createTransport({
@@ -149,7 +149,8 @@ export const verifyEmail = async (ctx) => {
           username: email,
           email: email,
           secretPhrase: email,
-          accountRS: code
+          accountRS: email,
+          token:code
         }
         
         await Account.create({
@@ -198,7 +199,7 @@ export const verifyCode = async (ctx) => {
   await Account.findOne({
     where: {
       email,
-      accountRS: code
+      token: code
     }
   }).then(async (result) => {
     if(result){
@@ -337,7 +338,12 @@ export const getAccounts = async (ctx) => {
   const query = {
     limit,
     offset,
-    order: 'createdAt DESC'
+    order: 'createdAt DESC',
+    where: { 
+      accountRS:{
+        $length: '<5'
+      }
+    }
   }
 
   if (search) {
@@ -388,7 +394,7 @@ export const createVerification = async (ctx) => {
   if (fields.accountRS) {
     accountRS = fields.accountRS
   }
-  var dir = `/root/middleware/img/${accountRS}`
+  var dir = `${imgPath}/${accountRS}`
   if(!fs.existsSync(dir)){
     fs.mkdirSync(dir)
   }
@@ -415,7 +421,7 @@ export const createVerification = async (ctx) => {
 
 export const getEncryptedVerification = async (ctx) => {
   const { accountRS, file } = ctx.params
-  const filePath = `/root/middleware/img/${accountRS}/${file}`
+  const filePath = `${imgPath}/${accountRS}/${file}`
   try {
     let content = await awaitfs.readFile(filePath)
     ctx.set('Content-Type', 'application/octet-stream')
