@@ -38,6 +38,7 @@ export function sendAxiosRequest (requestType, data, async = true, params) {
   if (params) {
     url = `${nrsUrl}/${nrsSuffix.toLowerCase()}?requestType=${requestType}&${params}&random=${Math.random()}`
   }
+
   if (!data.secretPhrase) {
     return axios({
       method: 'post',
@@ -49,8 +50,10 @@ export function sendAxiosRequest (requestType, data, async = true, params) {
 
   // sign transactions locally
   let secretPhrase = data.secretPhrase
+
   delete data.secretPhrase
   data.publicKey = getPublicKey(secretPhrase)
+
   return axios({
     method: 'post',
     url,
@@ -60,10 +63,9 @@ export function sendAxiosRequest (requestType, data, async = true, params) {
   .then(_parseResult)
   .then(function (result, textStatus, jqXHR) {
     // TODO: fix this
-    // if (result && result.errorDescription) {
-    //   return $.Deferred().reject(jqXHR, textStatus, result)
-    // }
-    // console.log(textStatus, jqXHR)
+     if (result && result.errorDescription) {
+       return $.Deferred().reject(jqXHR, textStatus, result)
+     }    
 
     try {
       const { unsignedTransactionBytes } = result.data

@@ -9,12 +9,10 @@ const settings = {
   host: process.env.DB_HOST || '127.0.0.1'
 }
 
-
-//if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== 'production') {
   settings.dialect = 'sqlite'
   settings.storage = './database.sqlite'
-//}
-
+}
 
 const sequelize = new Sequelize(db.name, db.user, db.password, settings)
 sequelize.sync()

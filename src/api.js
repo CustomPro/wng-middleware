@@ -3,7 +3,7 @@ import asyncBusboy from 'async-busboy'
 import config from '../config.json'
 const { awsID, awsSecret, awsBucket, awsMasterKey, defaultEmailAddress, emailService } = config
 const aesKey = Buffer.alloc(32, awsMasterKey)
-const emailPassword = 'ASI123asi!'
+const emailPassword = 'asi1234567890'
 import AWS from 'aws-sdk'
 
 import fs from 'fs'
@@ -18,7 +18,7 @@ const S3Client = new AWS.S3({
   maxRetries: 3
 })
 
-const imgPath = '/Users/jetlee/Documents/wng-middleware/img'
+
 export const register = async (ctx) => {
   const {
     username,
@@ -26,11 +26,14 @@ export const register = async (ctx) => {
     secretPhrase,
     accountRS
   } = ctx.body
+  console.log(email)
+  console.log(accountRS)
+  console.log(username)
   await Account.update(
     { username, secretPhrase, accountRS },
-    { where: { email } }
+    { where: { email: email } }
   ).then(async (result) => {
-    console.log(result)
+
     ctx.body = {
       'status': 'success',
       result
@@ -62,7 +65,6 @@ export const verifyMessage = async (ctx) => {
     accountRS,
     code
   } = ctx.body
-
   await Account.findOne({
     where: {
       accountRS
@@ -70,10 +72,9 @@ export const verifyMessage = async (ctx) => {
   }).then(async (result) => {
     const savedToken = result.token
 
-    let flag = twoFactor.verifyToken(savedToken, code, 300)
-    console.log(flag)
+    let flag = twoFactor.verifyToken(savedToken, code, 10)
 
-    if( flag.delta == 0 || flag.delta == -1){
+    if( flag.delta < 1 && flag.delta > -10 ){
       ctx.body = {
       'status': 'success',
       'code': '1'
@@ -90,6 +91,7 @@ export const verifyMessage = async (ctx) => {
         code: '0'
       }
     })
+  
 
 }
 export const verifyEmail = async (ctx) => {
@@ -115,7 +117,7 @@ export const verifyEmail = async (ctx) => {
             { token: code },
             { where: { email: email } }
           ).then(async (result) => {
-           /* let transporter = nodemailer.createTransport({
+            let transporter = nodemailer.createTransport({
               service: emailService,
               auth:{
                 user: defaultEmailAddress,
@@ -135,7 +137,7 @@ export const verifyEmail = async (ctx) => {
                 console.log('Email send:' + info.response)
               }
 
-            })*/
+            })
             ctx.body = {
             'status': 'success',
             'code': '1'
@@ -150,13 +152,13 @@ export const verifyEmail = async (ctx) => {
           email: email,
           secretPhrase: email,
           accountRS: email,
-          token:code
+          token: code
         }
         
         await Account.create({
             ...ctx.body
           }).then(async (result) => {
-            /*let transporter = nodemailer.createTransport({
+            let transporter = nodemailer.createTransport({
               service: emailService,
               auth:{
                 user: defaultEmailAddress,
@@ -176,7 +178,7 @@ export const verifyEmail = async (ctx) => {
                 console.log('Email send:' + info.response)
               }
 
-            })*/
+            })
             ctx.body = {
             'status': 'success',
             'code': '1'
@@ -234,13 +236,12 @@ export const getAccount = async (ctx) => {
   }).then(async (result) => {
       let newSecret = twoFactor.generateSecret({name: username, account: email})
       let newToken = twoFactor.generateToken(newSecret.secret)
-
       console.log(newToken)
       await Account.update(
        { token: newSecret.secret },
        { where: { email } }
        ).then(async (res) => {
-            /*let transporter = nodemailer.createTransport({
+            let transporter = nodemailer.createTransport({
               service: emailService,
               auth:{
                 user: defaultEmailAddress,
@@ -260,7 +261,7 @@ export const getAccount = async (ctx) => {
                 console.log('Email send:' + info.response)
               }
 
-            })*/
+            })
             ctx.body = {
               status: 'success',
               account: result
@@ -273,14 +274,12 @@ export const getAccount = async (ctx) => {
       }
     })
 
-  
-  //console.log(ctx.body)
+
 }
 export const getAccountByRS = async (ctx) => {
   const {
     RS
   } = ctx.query
-  console.log(RS)
   await Account.findOne({
     where: {
       accountRS: RS
@@ -289,12 +288,11 @@ export const getAccountByRS = async (ctx) => {
     let newSecret = twoFactor.generateSecret({ accountRS: RS })
     let newToken = twoFactor.generateToken(newSecret.secret)
 
-    console.log(newToken)
     await Account.update(
        { token: newSecret.secret },
        { where: { accountRS: RS } }
        ).then(async (res) => {
-           /*let transporter = nodemailer.createTransport({
+           let transporter = nodemailer.createTransport({
               service: emailService,
               auth:{
                 user: defaultEmailAddress,
@@ -314,7 +312,7 @@ export const getAccountByRS = async (ctx) => {
                 console.log('Email send:' + info.response)
               }
 
-            })*/
+            })
           ctx.body = {
             status: 'success',
             account: result
@@ -338,14 +336,13 @@ export const getAccounts = async (ctx) => {
   const query = {
     limit,
     offset,
-    order: 'createdAt DESC',
-    where: { 
-      accountRS:{
-        $length: '<5'
+    order: 'createdAt DESC'
+  }
+    query.where = {
+      accountRS: {
+        $like: `WNG%`
       }
     }
-  }
-
   if (search) {
     query.where = {
       username: {
@@ -394,7 +391,7 @@ export const createVerification = async (ctx) => {
   if (fields.accountRS) {
     accountRS = fields.accountRS
   }
-  var dir = `${imgPath}/${accountRS}`
+  var dir = `/root/middleware/img/${accountRS}`
   if(!fs.existsSync(dir)){
     fs.mkdirSync(dir)
   }
@@ -421,7 +418,7 @@ export const createVerification = async (ctx) => {
 
 export const getEncryptedVerification = async (ctx) => {
   const { accountRS, file } = ctx.params
-  const filePath = `${imgPath}/${accountRS}/${file}`
+  const filePath = `/root/middleware/img/${accountRS}/${file}`
   try {
     let content = await awaitfs.readFile(filePath)
     ctx.set('Content-Type', 'application/octet-stream')

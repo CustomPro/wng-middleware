@@ -1,8 +1,10 @@
 import bitcoinjs from 'bitcoinjs-lib'
 import Blockcypher from 'blockcypher'
+var Client = require("node-rest-client").Client
 import { BitcoinDeposits, BitcoinTransaction } from '../database'
 import { bitcoin as bitcoinConfig, minimumFee } from '../../config.json'
 import { transferAsset, sendMoney } from '../utils'
+
 const {
     xpub,
     blockcypherToken,
@@ -14,6 +16,7 @@ const {
 const blockcypherAPI = new Blockcypher('btc', 'main', blockcypherToken)
 const node = bitcoinjs.HDNode.fromBase58(xpub)
 
+let client = new Client()
 // create bitcoin address based on index
 export const deriveBitcoinAddress = (index) => {
   const address = node.derivePath(`0/${index}`).getAddress()
@@ -66,19 +69,19 @@ export const findOrCreateBitcoinAddress = async (ctx) => {
     })
 
     depositAddress = result.dataValues.address
-
     const createWebhookResult = await createBitcoinWebhook(depositAddress)
 
     if (!createWebhookResult) {
       throw Error('Error creating webhook')
     }
-  }
-
+  
+}  
   ctx.body = {
     success: true,
     depositAddress
   }
 }
+
 
 // register blockcypher webhook
 export const createBitcoinWebhook = async (address) => {
@@ -94,7 +97,6 @@ export const createBitcoinWebhook = async (address) => {
       if (err) {
         return reject(err)
       }
-
       return resolve(result)
     })
   })
@@ -163,7 +165,7 @@ export const newBitcoinTransaction = async (ctx) => {
     throw Error('Secret not matching')
   }
 
-  const {
+   const {
     outputs,
     confirmations,
     hash
@@ -177,7 +179,7 @@ export const newBitcoinTransaction = async (ctx) => {
     throw Error('Double spend')
   }
   let quantityQNT = 0
-
+ 
   outputs.forEach((output) => {
     if (output.addresses[0] === address) {
       quantityQNT = output.value
