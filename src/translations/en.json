@@ -1,0 +1,12 @@
+{
+	"subject": "Welcome to wallet.wang-coin.com",
+	"hello": "Hello,",
+	"content": "Thank you for registering at wallet.wang-coin.com. Copy and paste the verification code to confirm your email and activate your wallet.",
+	"code": "Verify code: ",
+	"subject2": "2FA Auth code for login",
+	"content2": "This email contains your 2 Factor Authentication code to complete your wallet login.",
+	"code2": "2FA code: ",
+	"thank": "Thank you,",
+	"contact": "wallet.wang-coin.com"
+
+ }

@@ -1,6 +1,5 @@
 import bitcoinjs from 'bitcoinjs-lib'
 import Blockcypher from 'blockcypher'
-var Client = require("node-rest-client").Client
 import { BitcoinDeposits, BitcoinTransaction } from '../database'
 import { bitcoin as bitcoinConfig, minimumFee } from '../../config.json'
 import { transferAsset, sendMoney } from '../utils'
@@ -16,7 +15,6 @@ const {
 const blockcypherAPI = new Blockcypher('btc', 'main', blockcypherToken)
 const node = bitcoinjs.HDNode.fromBase58(xpub)
 
-let client = new Client()
 // create bitcoin address based on index
 export const deriveBitcoinAddress = (index) => {
   const address = node.derivePath(`0/${index}`).getAddress()

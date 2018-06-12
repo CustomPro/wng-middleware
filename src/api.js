@@ -10,6 +10,10 @@ import fs from 'fs'
 import awaitfs from 'await-fs'
 import nodemailer from 'nodemailer'
 import twoFactor from 'node-2fa'
+import en from './translations/en'
+import zh from './translations/zh-cn'
+import bm from './translations/bm'
+import tm from './translations/tm'
 
 
 const S3Client = new AWS.S3({
@@ -97,8 +101,26 @@ export const verifyMessage = async (ctx) => {
 export const verifyEmail = async (ctx) => {
 
   const {
-    email
+    email,
+    language
   } = ctx.body
+
+  let locale = en
+  console.log('language')
+  console.log(language)
+  if(!language || language == 'undefined') {
+    locale = en
+  } else {
+    if (language.indexOf('zh') !== -1) {
+    locale = zh
+    }
+    if (language.indexOf('bm') !== -1) {
+      locale = bm
+    }
+    if (language.indexOf('ta') !== -1) {
+      locale = ta
+    }
+  }
   await Account.findOne({
     where: {
       email
@@ -127,8 +149,8 @@ export const verifyEmail = async (ctx) => {
             let mailOptions = {
               from: defaultEmailAddress,
               to: email,
-              subject: 'Welcome to Wang Coin',
-              text: `Hi.\n Thank you for joining Wang Coin! To finish register, you just need to confirm that we got your email right.\n Verify code:${code}`
+              subject: locale.subject,
+              text: `${locale.hello}\n ${locale.content}\n ${locale.code}${code} \n\n ${locale.thank} \n\n ${locale.contact}`
             }
             transporter.sendMail(mailOptions, function(error, info){
               if(error){
@@ -168,8 +190,8 @@ export const verifyEmail = async (ctx) => {
             let mailOptions = {
               from: defaultEmailAddress,
               to: email,
-              subject: 'Welcome to Wang Coin',
-              text: `Hi.\n Thank you for joining Wang Coin! To finish register, you just need to confirm that we got your email right.\n Verify code:${code}`
+              subject: locale.subject,
+              text: `${locale.hello}\n ${locale.content}\n ${locale.code}${code} \n\n ${locale.thank} \n\n ${locale.contact}`
             }
             transporter.sendMail(mailOptions, function(error, info){
               if(error){
@@ -225,9 +247,27 @@ export const verifyCode = async (ctx) => {
 export const getAccount = async (ctx) => {
   const {
     username,
-    email
+    email,
+    language
   } = ctx.query
 
+  let locale = en
+    console.log('language')
+  console.log(language)
+
+  if(!language || language == 'undefined') {
+    locale = en
+  } else {
+    if (language.indexOf('zh') !== -1) {
+    locale = zh
+    }
+    if (language.indexOf('bm') !== -1) {
+      locale = bm
+    }
+    if (language.indexOf('ta') !== -1) {
+      locale = ta
+    }
+  }
   await Account.findOne({
     where: {
       username,
@@ -241,7 +281,7 @@ export const getAccount = async (ctx) => {
        { token: newSecret.secret },
        { where: { email } }
        ).then(async (res) => {
-            let transporter = nodemailer.createTransport({
+          let transporter = nodemailer.createTransport({
               service: emailService,
               auth:{
                 user: defaultEmailAddress,
@@ -251,8 +291,8 @@ export const getAccount = async (ctx) => {
             let mailOptions = {
               from: defaultEmailAddress,
               to: email,
-              subject: 'Welcome to Wang Coin',
-              text: `Your secret key is:${newToken.token}`
+              subject: locale.subject2,
+              text: `${locale.hello}\n ${locale.content2}\n ${locale.code2} ${newToken.token} \n\n ${locale.thank} \n\n ${locale.contact}`
             }
             transporter.sendMail(mailOptions, function(error, info){
               if(error){
@@ -278,8 +318,25 @@ export const getAccount = async (ctx) => {
 }
 export const getAccountByRS = async (ctx) => {
   const {
-    RS
+    RS,
+    language
   } = ctx.query
+  
+  let locale = en
+  if(!language || language == 'undefined') {
+    locale = en
+  } else {
+    if (language.indexOf('zh') !== -1) {
+    locale = zh
+    }
+    if (language.indexOf('bm') !== -1) {
+      locale = bm
+    }
+    if (language.indexOf('ta') !== -1) {
+      locale = ta
+    }
+  }
+  
   await Account.findOne({
     where: {
       accountRS: RS
@@ -302,8 +359,8 @@ export const getAccountByRS = async (ctx) => {
             let mailOptions = {
               from: defaultEmailAddress,
               to: email,
-              subject: 'Welcome to Wang Coin',
-              text: `Your secret key is:${newToken.token}`
+              subject: locale.subject2,
+              text: `${locale.hello}\n ${locale.content2}\n ${locale.code2}${newToken.token} \n\n ${locale.thank} \n\n ${locale.contact}`
             }
             transporter.sendMail(mailOptions, function(error, info){
               if(error){

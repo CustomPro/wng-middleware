@@ -1,7 +1,6 @@
 {
   "adminPublicKeys": [
-    "9be72533f14413972122ca679aba02b17461d111343d2343201771e1b26f1b52",
-    "cfd8ebdc53add87d5aae2530621557649cc3299a4eecaf86c84f486ddfe73b4f",
+    "0ce6ba32ff8dd938326b5b3d56649501db4b53c178bb11ae87572bdf891b7d39",
     "59356122a262412306641f9b82d72bd062dcedfa6e5e73b9dd5fedb3d2fd4b3a"
   ],
   "awsID": "AKIAJFR7PFNJKXJIDFZA",
@@ -9,7 +8,7 @@
   "awsBucket": "production-kyc",
   "awsMasterKey": "AWS MASTER KEY",
   "sendgridApiKey": "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",
-  "defaultEmailAddress": "jamindarm@gmail.com",
+  "defaultEmailAddress": "wangcoin1@gmail.com",
   "emailService": "gmail",
   "nrsUrl": "https://sg.wang-coin.com",
   "nrsSuffix": "dbn",
