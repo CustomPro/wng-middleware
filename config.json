@@ -8,7 +8,7 @@
   "awsBucket": "production-kyc",
   "awsMasterKey": "AWS MASTER KEY",
   "sendgridApiKey": "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",
-  "defaultEmailAddress": "wangcoin1@gmail.com",
+  "defaultEmailAddress": "--@gmail.com",
   "emailService": "gmail",
   "nrsUrl": "https://sg.wang-coin.com",
   "nrsSuffix": "dbn",
